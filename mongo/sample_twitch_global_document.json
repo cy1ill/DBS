@@ -1,0 +1,13 @@
+{
+  "_id": {
+    "year": 2016,
+    "month": 1
+  },
+  "total_hours_watched": 480241904,
+  "total_avg_viewers": 646355,
+  "total_peak_viewers": 1275257,
+  "total_streams": 7701675,
+  "total_avg_channels": 20076,
+  "games_streamed": 12149,
+  "viewer_ratio": 29.08
+}

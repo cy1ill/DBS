@@ -1,0 +1,48 @@
+# =============================================================================
+# DBS-Projekt — Git Ignore
+# =============================================================================
+
+# Roh-Datendateien (zu gross fuer Git, werden via OneDrive auf die VM gebracht)
+data/raw/*
+!data/raw/.gitkeep
+
+# Preprocessing-Output (wird auf der VM neu generiert)
+data/processed/
+
+# Python venv
+.venv/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# IDE
+.idea/workspace.xml
+.idea/usage.statistics.xml
+.idea/dictionaries
+.idea/shelf/
+.idea/$CACHE_FILE$
+.idea/inspectionProfiles/Project_Default.xml
+*.iml
+
+# macOS / Windows
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Lokale Secrets / Credentials (NIE committen)
+.env
+*.local
+*.key
+*.pem
+kaggle.json
+mysql_password.txt
+mongodb_password.txt
+
+# Logs
+*.log
+
+# Metabase (falls jemand zu Testzwecken lokal startet)
+metabase.db.mv.db
+metabase.db.trace.db
+plugins/
