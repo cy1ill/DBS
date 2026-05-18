@@ -10,8 +10,9 @@
 --    local_infile=ON gesetzt (siehe scripts/run_elt_mysql.sh).
 --  * Steam-CSV-Header hat 39 statt 40 Spalten (siehe Reports). Wir IGNOREn
 --    1 LINE und geben explizit alle 40 Spaltennamen an.
---  * Twitch-CSV ist cp1252 codiert — MySQL konvertiert via CHARACTER SET nach
---    utf8mb4 beim Laden.
+--  * Twitch-CSV ist cp1252 codiert -- in MySQL nennt sich das 'latin1'
+--    (MySQL-Doku: "latin1 is the cp1252 West European character set, not the
+--    ISO-8859-1 character set"). Konvertierung auf utf8mb4 erfolgt automatisch.
 --  * Alle Tabellen werden vorher TRUNCATEd fuer idempotente Reruns.
 -- =============================================================================
 
@@ -47,7 +48,7 @@ INTO TABLE stg_steam
 -- -----------------------------------------------------------------------------
 LOAD DATA LOCAL INFILE '{{DATA_DIR}}/Twitch_game_data.csv'
 INTO TABLE stg_twitch_month
-    CHARACTER SET cp1252
+    CHARACTER SET latin1
     FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '"'
     LINES TERMINATED BY '\n'
     IGNORE 1 LINES
