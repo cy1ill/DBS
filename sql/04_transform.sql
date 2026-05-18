@@ -58,9 +58,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 
 -- -----------------------------------------------------------------------------
 -- 1. Hilfs-Sequenz 1..100 fuer String-Splitting
+--    Nicht-TEMPORARY, weil MySQL eine TEMPORARY-Table pro Query nur EINMAL
+--    referenzieren laesst (das Language-INSERT mit UNION braucht sie 2x).
+--    Wird am Ende der Transformation aufgeraeumt.
 -- -----------------------------------------------------------------------------
-DROP TEMPORARY TABLE IF EXISTS helper_numbers;
-CREATE TEMPORARY TABLE helper_numbers (n INT NOT NULL PRIMARY KEY) ENGINE=InnoDB;
+DROP TABLE IF EXISTS helper_numbers;
+CREATE TABLE helper_numbers (n INT NOT NULL PRIMARY KEY) ENGINE=InnoDB;
 INSERT INTO helper_numbers (n)
 WITH RECURSIVE seq AS (SELECT 1 AS n UNION ALL SELECT n+1 FROM seq WHERE n < 100)
 SELECT n FROM seq;
@@ -353,6 +356,9 @@ JOIN game g
 -- -----------------------------------------------------------------------------
 -- 9. Statistiken aktualisieren + Sanity-Counts
 -- -----------------------------------------------------------------------------
+-- Hilfs-Table wieder entfernen
+DROP TABLE IF EXISTS helper_numbers;
+
 ANALYZE TABLE game, developer, publisher, genre, category, tag, language,
               game_developer, game_publisher, game_genre, game_category,
               game_tag, game_platform, game_language,
