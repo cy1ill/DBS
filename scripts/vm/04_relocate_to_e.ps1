@@ -122,8 +122,13 @@ $javaExe = (Get-Command java -ErrorAction SilentlyContinue).Source
 if (-not $javaExe) { throw "java.exe nicht im PATH" }
 
 if (Get-Service Metabase -ErrorAction SilentlyContinue) {
-    & nssm stop Metabase confirm 2>&1 | Out-Null
-    & nssm remove Metabase confirm 2>&1 | Out-Null
+    # nssm-Calls in try/catch wrappen, weil sie auf stderr schreiben wenn
+    # der Service nicht laeuft, was unter ErrorActionPreference=Stop killt
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    try { & nssm stop   Metabase confirm 2>&1 | Out-Null } catch {}
+    try { & nssm remove Metabase confirm 2>&1 | Out-Null } catch {}
+    $ErrorActionPreference = $prev
     Start-Sleep -Seconds 2
 }
 
