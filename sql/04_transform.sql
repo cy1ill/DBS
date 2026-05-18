@@ -76,16 +76,18 @@ SELECT
         STR_TO_DATE(release_date, '%e %b, %Y'),
         STR_TO_DATE(release_date, '%M %e, %Y')
     ) AS release_date,
-    CAST(NULLIF(required_age, '') AS UNSIGNED) AS required_age,
-    CAST(NULLIF(price, '') AS DECIMAL(8,2)) AS price_usd,
-    CAST(NULLIF(discount, '') AS UNSIGNED) AS discount_pct,
-    CAST(NULLIF(dlc_count, '') AS UNSIGNED) AS dlc_count,
+    -- Numerische Defaults: NULL bei fehlendem Wert -> 0 (Spalten sind NOT NULL DEFAULT 0,
+    -- aber MySQL respektiert DEFAULT bei explizitem NULL nicht -> COALESCE noetig)
+    COALESCE(CAST(NULLIF(required_age, '') AS UNSIGNED), 0) AS required_age,
+    COALESCE(CAST(NULLIF(price,        '') AS DECIMAL(8,2)), 0.00) AS price_usd,
+    COALESCE(CAST(NULLIF(discount,     '') AS UNSIGNED), 0) AS discount_pct,
+    COALESCE(CAST(NULLIF(dlc_count,    '') AS UNSIGNED), 0) AS dlc_count,
     NULLIF(about_the_game, '') AS about,
-    NULLIF(header_image, '') AS header_image_url,
-    -- "Estimated owners" = "100000 - 200000"  → min/max
+    NULLIF(header_image,   '') AS header_image_url,
+    -- "Estimated owners" = "100000 - 200000"  -> min/max (nullable, OK)
     CAST(NULLIF(TRIM(SUBSTRING_INDEX(estimated_owners, ' - ',  1)), '') AS UNSIGNED) AS owners_min,
     CAST(NULLIF(TRIM(SUBSTRING_INDEX(estimated_owners, ' - ', -1)), '') AS UNSIGNED) AS owners_max,
-    CAST(NULLIF(peak_ccu, '') AS UNSIGNED) AS peak_ccu,
+    COALESCE(CAST(NULLIF(peak_ccu, '') AS UNSIGNED), 0) AS peak_ccu,
     -- Score-Spalten: gueltig ist 1-100; 0 = "nicht bewertet" → NULL,
     -- Werte > 100 sind Daten-Noise (kommt in Steam vereinzelt vor) → ebenfalls NULL.
     -- Damit bleibt der CHECK (<=100) erfuellt und TINYINT laeuft nicht ueber.
@@ -93,12 +95,12 @@ SELECT
          THEN CAST(metacritic_score AS UNSIGNED) ELSE NULL END AS steam_meta_score,
     CASE WHEN CAST(NULLIF(user_score, '')        AS UNSIGNED) BETWEEN 1 AND 100
          THEN CAST(user_score        AS UNSIGNED) ELSE NULL END AS steam_user_score,
-    CAST(NULLIF(positive,        '') AS UNSIGNED) AS steam_positive_reviews,
-    CAST(NULLIF(negative,        '') AS UNSIGNED) AS steam_negative_reviews,
-    CAST(NULLIF(achievements,    '') AS UNSIGNED) AS achievements,
-    CAST(NULLIF(recommendations, '') AS UNSIGNED) AS recommendations,
-    CAST(NULLIF(avg_playtime_forever,    '') AS UNSIGNED) AS avg_playtime_forever_min,
-    CAST(NULLIF(median_playtime_forever, '') AS UNSIGNED) AS median_playtime_forever_min
+    COALESCE(CAST(NULLIF(positive,        '') AS UNSIGNED), 0) AS steam_positive_reviews,
+    COALESCE(CAST(NULLIF(negative,        '') AS UNSIGNED), 0) AS steam_negative_reviews,
+    COALESCE(CAST(NULLIF(achievements,    '') AS UNSIGNED), 0) AS achievements,
+    COALESCE(CAST(NULLIF(recommendations, '') AS UNSIGNED), 0) AS recommendations,
+    COALESCE(CAST(NULLIF(avg_playtime_forever,    '') AS UNSIGNED), 0) AS avg_playtime_forever_min,
+    COALESCE(CAST(NULLIF(median_playtime_forever, '') AS UNSIGNED), 0) AS median_playtime_forever_min
 FROM stg_steam
 WHERE app_id REGEXP '^[0-9]+$';  -- Sicherheit gegen kaputte Zeilen
 
