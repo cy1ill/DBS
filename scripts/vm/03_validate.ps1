@@ -7,7 +7,7 @@
     Geht durch:
       1. Service-Status fuer MySQL80, MongoDB, Metabase
       2. Lokale Port-Connectivity (3306, 27017, 3000)
-      3. mysql.exe SELECT 1 (anonymer Versuch — sollte mit Auth-Fehler scheitern,
+      3. mysql.exe SELECT 1 (anonymer Versuch -- sollte mit Auth-Fehler scheitern,
          was bestaetigt dass der Server antwortet)
       4. mongosh ping
       5. HTTP GET auf Metabase Healthcheck
@@ -52,7 +52,7 @@ foreach ($p in @(@{Name="MySQL"; Port=3306}, @{Name="MongoDB"; Port=27017}, @{Na
 Write-Host ""
 Write-Host "MySQL-Antwort:" -ForegroundColor Yellow
 if (Get-Command mysql -ErrorAction SilentlyContinue) {
-    # versuche mit root ohne Passwort — wir erwarten entweder Erfolg oder Auth-Fehler
+    # versuche mit root ohne Passwort -- wir erwarten entweder Erfolg oder Auth-Fehler
     $out = & mysql -h 127.0.0.1 -u root -e "SELECT 1 AS ok;" 2>&1
     $reachable = $LASTEXITCODE -eq 0 -or ($out -match "Access denied")
     PassFail "MySQL antwortet auf 127.0.0.1:3306" $reachable

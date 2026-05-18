@@ -58,10 +58,10 @@ choco install python312 -y --no-progress
 # PATH refresh in dieser Session
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-Step "Java 17 (Temurin LTS) — fuer Metabase"
+Step "Java 17 (Temurin LTS) -- fuer Metabase"
 choco install temurin17 -y --no-progress
 
-Step "NSSM — Service-Wrapper fuer Metabase"
+Step "NSSM -- Service-Wrapper fuer Metabase"
 choco install nssm -y --no-progress
 
 # -----------------------------------------------------------------------------
@@ -117,7 +117,7 @@ if (-not $pythonExe) {
 # -----------------------------------------------------------------------------
 # (6) Zusammenfassung
 # -----------------------------------------------------------------------------
-Step "Installation abgeschlossen — Versionen pruefen"
+Step "Installation abgeschlossen -- Versionen pruefen"
 
 function ShowVersion {
     param([string]$Label, [string]$CmdName, [string[]]$VersionArgs = @("--version"))

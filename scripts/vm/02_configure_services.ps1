@@ -80,7 +80,7 @@ Write-Host "Patch: $mongoConfig"
 Copy-Item $mongoConfig "$mongoConfig.bak" -Force
 
 $cfg = Get-Content $mongoConfig -Raw
-# bindIp auf 0.0.0.0 (extern erreichbar) — KEINE Auth bis User angelegt sind
+# bindIp auf 0.0.0.0 (extern erreichbar) -- KEINE Auth bis User angelegt sind
 $cfg = $cfg -replace "(?m)^\s*bindIp:.*$", "  bindIp: 0.0.0.0"
 Set-Content -Path $mongoConfig -Value $cfg -Encoding UTF8
 Write-Host "mongod.cfg gepatcht (bindIp 0.0.0.0)."
@@ -100,7 +100,7 @@ if (-not (Test-Path $metabaseJar)) {
 # Falls Service existiert: erst entfernen
 $existing = & nssm status Metabase 2>$null
 if ($LASTEXITCODE -eq 0) {
-    Write-Host "Existierender Metabase-Service: $existing — wird entfernt..."
+    Write-Host "Existierender Metabase-Service: $existing -- wird entfernt..."
     & nssm stop Metabase confirm 2>$null | Out-Null
     & nssm remove Metabase confirm | Out-Null
 }
