@@ -35,12 +35,17 @@ PYTHON="${PYTHON:-$PROJ_ROOT/.venv/bin/python}"
 MONGOIMPORT="${MONGOIMPORT:-mongoimport}"
 MONGOSH="${MONGOSH:-mongosh}"
 
-PROCESSED_DIR="$PROJ_ROOT/data/processed"
+DATA_DIR_RAW="${DATA_DIR_RAW:-$PROJ_ROOT/data/raw}"
+PROCESSED_DIR="${DATA_DIR_PROCESSED:-$PROJ_ROOT/data/processed}"
+export DATA_DIR_RAW
+export DATA_DIR_PROCESSED="$PROCESSED_DIR"
 
-echo "=== Game Hype Index — MongoDB ELT ==="
-echo "    URI     : $MONGO_URI"
-echo "    DB      : $DB_NAME"
-echo "    Python  : $PYTHON"
+echo "=== Game Hype Index - MongoDB ELT ==="
+echo "    URI       : $MONGO_URI"
+echo "    DB        : $DB_NAME"
+echo "    Python    : $PYTHON"
+echo "    Raw data  : $DATA_DIR_RAW"
+echo "    Processed : $PROCESSED_DIR"
 echo ""
 
 echo ">>> [1/4] Preprocessing (Python) → data/processed/*.jsonl ..."

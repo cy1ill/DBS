@@ -24,12 +24,15 @@ from __future__ import annotations
 
 import csv
 import json
+import os
 import re
 import sys
 from pathlib import Path
 
-RAW = Path("/Users/cyrill/PycharmProjects/DBS/data/raw")
-OUT = Path("/Users/cyrill/PycharmProjects/DBS/data/processed")
+# Pfade per Env-Var konfigurierbar (DATA_DIR_RAW / DATA_DIR_PROCESSED),
+# Fallback auf Mac-Default fuer lokale Tests.
+RAW = Path(os.environ.get("DATA_DIR_RAW") or "/Users/cyrill/PycharmProjects/DBS/data/raw")
+OUT = Path(os.environ.get("DATA_DIR_PROCESSED") or "/Users/cyrill/PycharmProjects/DBS/data/processed")
 
 
 def normalize_title(s: str) -> str:

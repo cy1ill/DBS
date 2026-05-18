@@ -13,14 +13,16 @@ from __future__ import annotations
 
 import ast
 import json
+import os
 import re
 from datetime import datetime
 from pathlib import Path
 
 import pandas as pd
 
-RAW = Path("/Users/cyrill/PycharmProjects/DBS/data/raw")
-OUT_DIR = Path("/Users/cyrill/PycharmProjects/DBS/mongo")
+_PROJ_ROOT = Path(__file__).resolve().parent.parent
+RAW = Path(os.environ.get("DATA_DIR_RAW") or (_PROJ_ROOT / "data" / "raw"))
+OUT_DIR = Path(os.environ.get("MONGO_PROTOTYPE_OUT") or (_PROJ_ROOT / "mongo"))
 
 STEAM_COLUMNS = [
     "AppID", "Name", "Release date", "Estimated owners", "Peak CCU",

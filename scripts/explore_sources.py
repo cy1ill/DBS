@@ -10,13 +10,15 @@ Zweck: Grundlage fuer das konzeptionelle ER-Modell (Schritt 2 des Auftrags).
 from __future__ import annotations
 
 import json
+import os
 import re
 from pathlib import Path
 
 import pandas as pd
 
-RAW = Path("/Users/cyrill/PycharmProjects/DBS/data/raw")
-REPORT = Path("/Users/cyrill/PycharmProjects/DBS/reports/source_exploration.md")
+_PROJ_ROOT = Path(__file__).resolve().parent.parent
+RAW = Path(os.environ.get("DATA_DIR_RAW") or (_PROJ_ROOT / "data" / "raw"))
+REPORT = Path(os.environ.get("REPORT_OUT") or (_PROJ_ROOT / "reports" / "source_exploration.md"))
 
 STEAM_CSV = RAW / "games.csv"
 TWITCH_GAMES_CSV = RAW / "Twitch_game_data.csv"
