@@ -31,7 +31,9 @@ Write-Host "=== DBS VM-Validierung ===" -ForegroundColor Cyan
 # ---- (1) Service-Status --------------------------------------------------
 Write-Host ""
 Write-Host "Service-Status:" -ForegroundColor Yellow
-foreach ($svcName in @("MySQL80", "MongoDB", "Metabase")) {
+$mysqlSvc = (Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "MySQL*" } | Select-Object -First 1).Name
+if (-not $mysqlSvc) { $mysqlSvc = "MySQL80" }
+foreach ($svcName in @($mysqlSvc, "MongoDB", "Metabase")) {
     $svc = Get-Service -Name $svcName -ErrorAction SilentlyContinue
     if ($svc) {
         PassFail "Service $svcName" ($svc.Status -eq "Running") $svc.Status

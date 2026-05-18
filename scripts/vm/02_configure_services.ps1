@@ -26,17 +26,47 @@ function Step($msg) {
 }
 
 # -----------------------------------------------------------------------------
-# Pfade (Chocolatey-Standard-Installation)
+# Pfade dynamisch ermitteln (Chocolatey legt Tools je nach Paket
+# unterschiedlich ab: tools\ vs ProgramData vs Program Files)
 # -----------------------------------------------------------------------------
-$mysqlIni    = "C:\ProgramData\MySQL\MySQL Server 8.0\my.ini"
-$mongoConfig = "C:\Program Files\MongoDB\Server\7.0\bin\mongod.cfg"
-if (-not (Test-Path $mongoConfig)) {
-    # Fallback: in 8.0-Pfad suchen
-    $mongoConfig = (Get-ChildItem "C:\Program Files\MongoDB\Server\" -Recurse -Filter "mongod.cfg" -ErrorAction SilentlyContinue | Select-Object -First 1).FullName
+
+function Find-File {
+    param([string[]]$Roots, [string]$Filter)
+    foreach ($r in $Roots) {
+        if (Test-Path $r) {
+            $hit = Get-ChildItem $r -Recurse -Filter $Filter -ErrorAction SilentlyContinue |
+                   Select-Object -First 1
+            if ($hit) { return $hit.FullName }
+        }
+    }
+    return $null
 }
+
+Write-Host "Suche Konfigurationsdateien..." -ForegroundColor DarkGray
+
+$mysqlIni    = Find-File -Roots @(
+                    "C:\ProgramData\MySQL",
+                    "C:\tools\mysql",
+                    "C:\Program Files\MySQL"
+               ) -Filter "my.ini"
+$mongoConfig = Find-File -Roots @(
+                    "C:\Program Files\MongoDB",
+                    "C:\ProgramData\MongoDB",
+                    "C:\tools\mongodb"
+               ) -Filter "mongod.cfg"
 $metabaseDir = "C:\Metabase"
 $metabaseJar = Join-Path $metabaseDir "metabase.jar"
 $javaExe     = (Get-Command java -ErrorAction SilentlyContinue).Source
+
+Write-Host "  MySQL my.ini    : $(if ($mysqlIni)   { $mysqlIni }   else { '<NICHT GEFUNDEN>' })"
+Write-Host "  MongoDB cfg     : $(if ($mongoConfig){ $mongoConfig }else { '<NICHT GEFUNDEN>' })"
+Write-Host "  Metabase JAR    : $metabaseJar"
+Write-Host "  Java exe        : $(if ($javaExe)    { $javaExe }    else { '<NICHT GEFUNDEN>' })"
+
+# MySQL-Service-Namen ermitteln (kann MySQL80, MySQL84, MySQL, ... heissen)
+$mysqlService = (Get-Service -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "MySQL*" } | Select-Object -First 1).Name
+if (-not $mysqlService) { $mysqlService = "MySQL80" }
+Write-Host "  MySQL Service   : $mysqlService"
 
 # -----------------------------------------------------------------------------
 # (1) MySQL my.ini patchen
@@ -149,7 +179,7 @@ function Restart-IfRunning {
     }
 }
 
-Restart-IfRunning "MySQL80"
+Restart-IfRunning $mysqlService
 Restart-IfRunning "MongoDB"
 # Metabase wurde oben schon gestartet; hier nur Status
 $mb = Get-Service Metabase -ErrorAction SilentlyContinue
@@ -159,7 +189,7 @@ if ($mb) { Write-Host "  Metabase status -> $($mb.Status)" }
 # (6) Zusammenfassung
 # -----------------------------------------------------------------------------
 Step "Status"
-Get-Service MySQL80, MongoDB, Metabase -ErrorAction SilentlyContinue | Format-Table -AutoSize
+Get-Service $mysqlService, "MongoDB", "Metabase" -ErrorAction SilentlyContinue | Format-Table -AutoSize
 
 Write-Host ""
 Write-Host "Konfiguration abgeschlossen." -ForegroundColor Green
