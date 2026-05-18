@@ -58,8 +58,8 @@ choco install python312 -y --no-progress
 # PATH refresh in dieser Session
 $env:Path = [System.Environment]::GetEnvironmentVariable("Path","Machine") + ";" + [System.Environment]::GetEnvironmentVariable("Path","User")
 
-Step "Java 17 (Temurin LTS) -- fuer Metabase"
-choco install temurin17 -y --no-progress
+Step "Java 21 (Temurin LTS) -- fuer Metabase (braucht Java 21+ ab v0.51)"
+choco install temurin21 -y --no-progress
 
 Step "NSSM -- Service-Wrapper fuer Metabase"
 choco install nssm -y --no-progress
