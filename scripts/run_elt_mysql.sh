@@ -44,10 +44,20 @@ if [[ ! -d "$DATA_DIR" ]]; then
     exit 1
 fi
 
-echo "=== Game Hype Index — MySQL ELT ==="
-echo "    Host    : $MYSQL_HOST:$MYSQL_PORT"
-echo "    User    : $MYSQL_USER"
-echo "    Data    : $DATA_DIR"
+# Auf Git Bash / MSYS: Unix-Pfad (/e/...) in Windows-Pfad (E:/...) umwandeln,
+# weil mysql.exe ein Windows-Binary ist und Unix-Pfade nicht versteht.
+# Forward-Slashes sind unter Windows-MySQL OK.
+if command -v cygpath > /dev/null 2>&1; then
+    DATA_DIR_MYSQL=$(cygpath -m "$DATA_DIR")
+else
+    DATA_DIR_MYSQL="$DATA_DIR"
+fi
+
+echo "=== Game Hype Index - MySQL ELT ==="
+echo "    Host       : $MYSQL_HOST:$MYSQL_PORT"
+echo "    User       : $MYSQL_USER"
+echo "    Data (sh)  : $DATA_DIR"
+echo "    Data (sql) : $DATA_DIR_MYSQL"
 echo ""
 
 echo ">>> [1/4] Zielschema (DROP + CREATE)..."
@@ -56,8 +66,8 @@ mysql "${mysql_args[@]}" < "$PROJ_ROOT/sql/01_schema.sql"
 echo ">>> [2/4] Staging-Schema..."
 mysql "${mysql_args[@]}" game_hype_index < "$PROJ_ROOT/sql/02_staging_schema.sql"
 
-echo ">>> [3/4] LOAD DATA INFILE (gross — kann mehrere Minuten dauern)..."
-sed "s|{{DATA_DIR}}|$DATA_DIR|g" "$PROJ_ROOT/sql/03_load.sql" \
+echo ">>> [3/4] LOAD DATA INFILE (gross -- kann mehrere Minuten dauern)..."
+sed "s|{{DATA_DIR}}|$DATA_DIR_MYSQL|g" "$PROJ_ROOT/sql/03_load.sql" \
     | mysql "${mysql_args[@]}" game_hype_index
 
 echo ">>> [4/4] Transformation ins Zielschema..."
