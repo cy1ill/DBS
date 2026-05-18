@@ -86,9 +86,13 @@ SELECT
     CAST(NULLIF(TRIM(SUBSTRING_INDEX(estimated_owners, ' - ',  1)), '') AS UNSIGNED) AS owners_min,
     CAST(NULLIF(TRIM(SUBSTRING_INDEX(estimated_owners, ' - ', -1)), '') AS UNSIGNED) AS owners_max,
     CAST(NULLIF(peak_ccu, '') AS UNSIGNED) AS peak_ccu,
-    -- Score-Spalten: in Steam ist "0" der Sentinel fuer "nicht bewertet" → NULL
-    NULLIF(CAST(NULLIF(metacritic_score, '') AS UNSIGNED), 0) AS steam_meta_score,
-    NULLIF(CAST(NULLIF(user_score, '')        AS UNSIGNED), 0) AS steam_user_score,
+    -- Score-Spalten: gueltig ist 1-100; 0 = "nicht bewertet" → NULL,
+    -- Werte > 100 sind Daten-Noise (kommt in Steam vereinzelt vor) → ebenfalls NULL.
+    -- Damit bleibt der CHECK (<=100) erfuellt und TINYINT laeuft nicht ueber.
+    CASE WHEN CAST(NULLIF(metacritic_score, '') AS UNSIGNED) BETWEEN 1 AND 100
+         THEN CAST(metacritic_score AS UNSIGNED) ELSE NULL END AS steam_meta_score,
+    CASE WHEN CAST(NULLIF(user_score, '')        AS UNSIGNED) BETWEEN 1 AND 100
+         THEN CAST(user_score        AS UNSIGNED) ELSE NULL END AS steam_user_score,
     CAST(NULLIF(positive,        '') AS UNSIGNED) AS steam_positive_reviews,
     CAST(NULLIF(negative,        '') AS UNSIGNED) AS steam_negative_reviews,
     CAST(NULLIF(achievements,    '') AS UNSIGNED) AS achievements,
