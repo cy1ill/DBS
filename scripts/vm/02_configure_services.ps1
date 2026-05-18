@@ -94,10 +94,15 @@ function Set-IniValue {
 $ini = Set-IniValue -Body $ini -Section "mysqld" -Key "local_infile"          -Value "1"
 $ini = Set-IniValue -Body $ini -Section "mysqld" -Key "character-set-server" -Value "utf8mb4"
 $ini = Set-IniValue -Body $ini -Section "mysqld" -Key "collation-server"     -Value "utf8mb4_unicode_ci"
-$ini = Set-IniValue -Body $ini -Section "mysqld" -Key "secure_file_priv"     -Value '""'
+$ini = Set-IniValue -Body $ini -Section "mysqld" -Key "secure_file_priv"     -Value ""
 
-Set-Content -Path $mysqlIni -Value $ini -Encoding UTF8
-Write-Host "my.ini gepatcht."
+# WICHTIG: BOM-frei schreiben! PowerShell 5.1's "Set-Content -Encoding UTF8"
+# schreibt UTF-8 MIT BOM, was MySQL beim Parsen von my.ini abschiesst.
+# .NET-Methode mit explizitem UTF8Encoding(false) = ohne BOM, oder ASCII
+# (my.ini enthaelt nur ASCII).
+$utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+[System.IO.File]::WriteAllText($mysqlIni, $ini, $utf8NoBom)
+Write-Host "my.ini gepatcht (UTF-8 ohne BOM)."
 
 # -----------------------------------------------------------------------------
 # (2) MongoDB mongod.cfg patchen
@@ -112,7 +117,8 @@ Copy-Item $mongoConfig "$mongoConfig.bak" -Force
 $cfg = Get-Content $mongoConfig -Raw
 # bindIp auf 0.0.0.0 (extern erreichbar) -- KEINE Auth bis User angelegt sind
 $cfg = $cfg -replace "(?m)^\s*bindIp:.*$", "  bindIp: 0.0.0.0"
-Set-Content -Path $mongoConfig -Value $cfg -Encoding UTF8
+# Auch hier BOM-frei (MongoDB ist toleranter als MySQL, aber konsistent ist besser)
+[System.IO.File]::WriteAllText($mongoConfig, $cfg, $utf8NoBom)
 Write-Host "mongod.cfg gepatcht (bindIp 0.0.0.0)."
 Write-Host "HINWEIS: Auth erst NACH dem Anlegen des admin-Users aktivieren (Phase E)."
 
