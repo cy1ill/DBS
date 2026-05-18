@@ -32,7 +32,7 @@ PROJ_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 MONGO_URI="${MONGO_URI:-mongodb://localhost:27017}"
 DB_NAME="${DB_NAME:-game_hype_index}"
 # Python-Pfad finden: erst venv (lokale Entwicklung), dann python3 / python im PATH
-if [[ -n "$PYTHON" ]]; then
+if [[ -n "${PYTHON:-}" ]]; then
     :  # User-Override respektieren
 elif [[ -x "$PROJ_ROOT/.venv/bin/python" ]]; then
     PYTHON="$PROJ_ROOT/.venv/bin/python"
