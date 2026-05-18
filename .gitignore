@@ -33,6 +33,9 @@ desktop.ini
 # Lokale Secrets / Credentials (NIE committen)
 .env
 *.local
+*.local.*
+credentials.local.md
+passwords.local.txt
 *.key
 *.pem
 kaggle.json
