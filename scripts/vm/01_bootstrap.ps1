@@ -118,14 +118,32 @@ if (-not $pythonExe) {
 # (6) Zusammenfassung
 # -----------------------------------------------------------------------------
 Step "Installation abgeschlossen — Versionen pruefen"
-& cmd /c "mysql --version 2>&1"
-& cmd /c "mongod --version 2>&1 | findstr db"
-& cmd /c "mongoimport --version 2>&1"
-& cmd /c "mongosh --version 2>&1"
-& cmd /c "java -version 2>&1"
-& cmd /c "python --version 2>&1"
+
+function ShowVersion {
+    param([string]$Label, [string]$CmdName, [string[]]$VersionArgs = @("--version"))
+    $cmd = Get-Command $CmdName -ErrorAction SilentlyContinue
+    if ($cmd) {
+        try {
+            $raw = (& $CmdName $VersionArgs 2>&1 | Out-String).Trim()
+            $firstLine = ($raw -split "`r?`n")[0]
+            Write-Host ("  {0,-12} : {1}" -f $Label, $firstLine)
+        } catch {
+            Write-Host ("  {0,-12} : {1}" -f $Label, "FEHLER: $($_.Exception.Message)") -ForegroundColor Red
+        }
+    } else {
+        Write-Host ("  {0,-12} : nicht im PATH (neue Shell starten oder Pfad ergaenzen)" -f $Label) -ForegroundColor Yellow
+    }
+}
+
+ShowVersion "MySQL"       "mysql"
+ShowVersion "MongoDB"     "mongod"
+ShowVersion "mongoimport" "mongoimport"
+ShowVersion "mongosh"     "mongosh"
+ShowVersion "Java"        "java"       @("-version")
+ShowVersion "Python"      "python"
 
 Write-Host ""
 Write-Host "Naechster Schritt:" -ForegroundColor Green
-Write-Host "  Neue PowerShell-Session als Admin oeffnen (damit PATH aktualisiert wird)"
-Write-Host "  Dann ausfuehren: .\scripts\vm\02_configure_services.ps1"
+Write-Host "  1. PowerShell schliessen und neu als Admin oeffnen (damit PATH aktualisiert ist)"
+Write-Host "  2. cd C:\dbs"
+Write-Host "  3. .\scripts\vm\02_configure_services.ps1"
