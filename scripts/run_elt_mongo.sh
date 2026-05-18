@@ -31,7 +31,19 @@ PROJ_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 
 MONGO_URI="${MONGO_URI:-mongodb://localhost:27017}"
 DB_NAME="${DB_NAME:-game_hype_index}"
-PYTHON="${PYTHON:-$PROJ_ROOT/.venv/bin/python}"
+# Python-Pfad finden: erst venv (lokale Entwicklung), dann python3 / python im PATH
+if [[ -n "$PYTHON" ]]; then
+    :  # User-Override respektieren
+elif [[ -x "$PROJ_ROOT/.venv/bin/python" ]]; then
+    PYTHON="$PROJ_ROOT/.venv/bin/python"
+elif command -v python3 > /dev/null 2>&1; then
+    PYTHON="python3"
+elif command -v python > /dev/null 2>&1; then
+    PYTHON="python"
+else
+    echo "FEHLER: Kein Python gefunden. Setze PYTHON=<pfad> als env var." >&2
+    exit 1
+fi
 MONGOIMPORT="${MONGOIMPORT:-mongoimport}"
 MONGOSH="${MONGOSH:-mongosh}"
 
