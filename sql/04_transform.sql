@@ -21,6 +21,17 @@
 
 USE game_hype_index;
 
+-- Strict-Mode lockern: Bei rohen Quelldaten kommen vereinzelt mis-aligned
+-- Felder vor (z.B. eine URL in einer numerischen Spalte wegen CSV-Quote-Issues).
+-- Ohne Strict-Mode wird so ein Wert zu 0 mit WARNING statt ERROR -- gewuenscht
+-- fuer ELT (eine kaputte Zeile soll nicht 122'611 gute kippen).
+SET SESSION sql_mode = (
+    SELECT REPLACE(
+        REPLACE(@@SESSION.sql_mode, 'STRICT_TRANS_TABLES', ''),
+        'STRICT_ALL_TABLES', ''
+    )
+);
+
 -- Idempotenz: Zielschema zuruecksetzen (Reihenfolge: Junctions/Facts vor Stamm)
 SET FOREIGN_KEY_CHECKS = 0;
 
