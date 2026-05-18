@@ -127,12 +127,14 @@ if (-not (Test-Path $metabaseJar)) {
     throw "Metabase JAR nicht gefunden unter $metabaseJar. Bootstrap nochmal laufen lassen?"
 }
 
-# Falls Service existiert: erst entfernen
-$existing = & nssm status Metabase 2>$null
-if ($LASTEXITCODE -eq 0) {
-    Write-Host "Existierender Metabase-Service: $existing -- wird entfernt..."
-    & nssm stop Metabase confirm 2>$null | Out-Null
-    & nssm remove Metabase confirm | Out-Null
+# Falls Service existiert: erst entfernen (Get-Service statt nssm status,
+# weil nssm bei nicht-existierendem Service auf stderr schreibt und das
+# unter ErrorActionPreference=Stop das Skript killen wuerde)
+if (Get-Service -Name Metabase -ErrorAction SilentlyContinue) {
+    Write-Host "Existierender Metabase-Service wird entfernt..."
+    & nssm stop Metabase confirm 2>&1 | Out-Null
+    & nssm remove Metabase confirm 2>&1 | Out-Null
+    Start-Sleep -Seconds 2  # Service-Manager Zeit geben
 }
 
 & nssm install Metabase $javaExe "-jar `"$metabaseJar`""
