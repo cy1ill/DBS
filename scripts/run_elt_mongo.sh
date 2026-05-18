@@ -63,26 +63,32 @@ echo ""
 echo ">>> [1/4] Preprocessing (Python) → data/processed/*.jsonl ..."
 "$PYTHON" "$PROJ_ROOT/scripts/mongo_preprocess.py"
 
+# Konstruiere Target-URI fuer game_hype_index (mit authSource=admin).
+# MONGO_URI kann mit /admin oder /db enden -- wir strippen das und bauen sauber neu.
+BASE_URI=$(echo "$MONGO_URI" | sed -E 's|^(mongodb(\+srv)?://[^/?]+).*|\1|')
+TARGET_URI="${BASE_URI}/${DB_NAME}?authSource=admin"
+echo "    Target URI: $TARGET_URI"
+
 echo ">>> [2/4] mongoimport in Staging-Collections..."
-"$MONGOIMPORT" --uri "$MONGO_URI/$DB_NAME" \
+"$MONGOIMPORT" --uri "$TARGET_URI" \
     --collection stg_games --file "$PROCESSED_DIR/games.jsonl" \
-    --type json --drop --quiet
-"$MONGOIMPORT" --uri "$MONGO_URI/$DB_NAME" \
+    --type json --drop
+"$MONGOIMPORT" --uri "$TARGET_URI" \
     --collection stg_twitch_month --file "$PROCESSED_DIR/twitch_month.jsonl" \
-    --type json --drop --quiet
-"$MONGOIMPORT" --uri "$MONGO_URI/$DB_NAME" \
+    --type json --drop
+"$MONGOIMPORT" --uri "$TARGET_URI" \
     --collection stg_twitch_global --file "$PROCESSED_DIR/twitch_global.jsonl" \
-    --type json --drop --quiet
-"$MONGOIMPORT" --uri "$MONGO_URI/$DB_NAME" \
+    --type json --drop
+"$MONGOIMPORT" --uri "$TARGET_URI" \
     --collection stg_metacritic --file "$PROCESSED_DIR/metacritic.jsonl" \
-    --type json --drop --quiet
+    --type json --drop
 
 echo ">>> [3/4] Ziel-Collections mit JSON-Schema-Validator anlegen..."
-"$MONGOSH" "$MONGO_URI/$DB_NAME" --quiet \
+"$MONGOSH" "$TARGET_URI" --quiet \
     --file "$PROJ_ROOT/mongo/01_create_collections.js"
 
 echo ">>> [4/4] Aggregation Pipeline: stg_* → games / twitch_global ..."
-"$MONGOSH" "$MONGO_URI/$DB_NAME" --quiet \
+"$MONGOSH" "$TARGET_URI" --quiet \
     --file "$PROJ_ROOT/mongo/02_transform.js"
 
 echo ""
