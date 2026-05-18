@@ -83,8 +83,29 @@ choco install mongodb -y --no-progress
 Step "MongoDB Database Tools (mongoimport, mongoexport, ...)"
 choco install mongodb-database-tools -y --no-progress
 
-Step "mongosh"
-choco install mongosh -y --no-progress
+Step "mongosh (direkt von mongodb.com -- Choco-Paket existiert nicht mehr)"
+$mongoshVer = "2.3.4"
+$mongoshDir = "C:\Program Files\mongosh"
+if (-not (Get-ChildItem $mongoshDir -Recurse -Filter "mongosh.exe" -ErrorAction SilentlyContinue)) {
+    $zipUrl  = "https://downloads.mongodb.com/compass/mongosh-$mongoshVer-win32-x64.zip"
+    $zipFile = "$env:TEMP\mongosh-$mongoshVer.zip"
+    Write-Host "  Downloading $zipUrl ..."
+    Invoke-WebRequest -Uri $zipUrl -OutFile $zipFile -UseBasicParsing
+    Expand-Archive -Path $zipFile -DestinationPath $mongoshDir -Force
+    Remove-Item $zipFile -Force
+}
+$mongoshBinDir = (Get-ChildItem $mongoshDir -Recurse -Filter "mongosh.exe" -ErrorAction SilentlyContinue | Select-Object -First 1).Directory.FullName
+if ($mongoshBinDir) {
+    $sysPath = [Environment]::GetEnvironmentVariable("Path","Machine")
+    if ($sysPath -notlike "*$mongoshBinDir*") {
+        [Environment]::SetEnvironmentVariable("Path", "$sysPath;$mongoshBinDir", "Machine")
+        Write-Host "  PATH permanent ergaenzt um $mongoshBinDir"
+    }
+    $env:Path = "$env:Path;$mongoshBinDir"
+    Write-Host "  mongosh installiert: $mongoshBinDir"
+} else {
+    Write-Warning "mongosh.exe nicht gefunden nach Extract!"
+}
 
 # -----------------------------------------------------------------------------
 # (4) Metabase JAR + Verzeichnis
